@@ -1,16 +1,45 @@
 # Spotter — Freight Rate Prediction
 
-An experimental regression project for estimating freight rates from transportation-load data. The README describes model comparison and a December prediction output, but the repository currently lists a folder named `spotter 0000` and this README. Inspect that folder to confirm the implementation, data files, and exact workflow.
+Spotter is a freight-rate regression project. It engineers route and calendar features from load data, trains a scikit-learn regression pipeline, evaluates it on a held-out split, then refits on all labeled training data to produce validation-file predictions.
 
-## Getting started
+## Data files
 
-1. Clone or download the repository and inspect `spotter 0000`.
-2. Confirm the training and prediction data, target column, load identifier, and any data license.
-3. Create a Python virtual environment. There is no root `requirements.txt` in the current file list, so derive dependencies from the project source rather than guessing.
-4. Use the script or notebook's documented command once the entry point is confirmed.
+The take-home datasets are intentionally not included in this repository. Place authorized files beside `train.py`:
 
-The existing project notes report a validation R² of 0.8618, MAE of 126.39, and RMSE of 543.59. These figures are included as historical project claims, not independently verified results; the metric units, validation split, data version, and procedure should be documented before treating them as comparable. No root test suite or reproducible command is currently listed.
+- `train-test.csv`: labeled training records; must contain `posted_rate`.
+- `validation.csv`: unlabeled records with the same feature schema.
 
-## Reproducibility
+The training script expects fields for pickup, delivery, equipment, date, distance and weight. Optional `market_index` and `quote_signal` fields are supported.
 
-Keep train/validation separation clear, prevent target leakage, preserve load IDs when exporting predictions, and record the exact input/output schema. Do not publish private customer or shipment data.
+## Setup
+
+Python 3.10+:
+
+```bash
+python -m venv .venv
+# Windows PowerShell: .venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python train.py
+```
+
+## Methodology
+
+- Date-derived calendar features and a pickup-to-delivery route feature.
+- Numeric median imputation and categorical most-frequent imputation inside the training pipeline.
+- One-hot encoding with unknown-category handling.
+- Held-out test metrics: R², MAE and RMSE.
+- Final refit on all labeled rows, followed by validation predictions.
+
+Preprocessing is fitted only on training data during evaluation; the validation file is transformed by the final fitted pipeline. Keep private customer, carrier and shipment data out of public Git repositories.
+
+## Outputs
+
+The script writes `artifacts/freight_rate_model.joblib`, `artifacts/metrics.json`, and `artifacts/validation_predictions.csv`. These are generated locally and ignored by Git.
+
+Previously reported scores are historical project claims and are not asserted as reproduced by the current entry point. Always state the dataset version, units, split, and metrics.
+
+## License
+
+No license is declared. All rights reserved unless the repository owner adds an explicit license.
