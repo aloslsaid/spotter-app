@@ -14,3 +14,18 @@ The existing project notes report a validation R² of 0.8618, MAE of 126.39, and
 ## Reproducibility
 
 Keep train/validation separation clear, prevent target leakage, preserve load IDs when exporting predictions, and record the exact input/output schema. Do not publish private customer or shipment data.
+
+
+## Reproducible run and required input files
+
+The extensionless Python script is `spotter 0000`. It expects **both** `train-test.csv` and `validation.csv` in the repository root. Those two files are not currently listed in the repository, so the script cannot run from the current checkout until you provide the matching authorized datasets.
+
+```bash
+python -m venv .venv
+# Activate the environment, then:
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python "spotter 0000"
+```
+
+The script writes `validation_predictions.csv` after training. Do not replace the missing inputs with guessed or synthetic freight records; confirm the exact expected columns and data provenance first.
