@@ -14,3 +14,8 @@ The existing project notes report a validation R² of 0.8618, MAE of 126.39, and
 ## Reproducibility
 
 Keep train/validation separation clear, prevent target leakage, preserve load IDs when exporting predictions, and record the exact input/output schema. Do not publish private customer or shipment data.
+
+
+## Methodology note
+
+The model pipeline now fits categorical and numeric imputers on training data only; validation data is transformed using those fitted imputers. The expected train-test.csv and validation.csv inputs still need to be supplied.
