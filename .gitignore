@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+artifacts/
+train-test.csv
+validation.csv
