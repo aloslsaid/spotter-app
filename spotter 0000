@@ -9,6 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 
 from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 
 from sklearn.linear_model import LinearRegression
 
@@ -42,7 +43,7 @@ df["day_of_week"] = df["date"].dt.dayofweek
 
 df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)
 
-df["route"] = df["pickup"].astype(str) + "_" + df["delivery"].astype(str)
+df["route"] = df["pickup"].astype("string") + "_" + df["delivery"].astype("string")
 
 df["weight_per_mile"] = df["weight"] / df["distance"].replace(0, np.nan)
 
@@ -84,15 +85,9 @@ numerical_columns = [
 
 ]
 
-for col in categorical_columns:
-
-    df[col] = df[col].fillna(df[col].mode()[0])
-
-for col in numerical_columns:
-
-    df[col] = df[col].replace([np.inf, -np.inf], np.nan)
-
-    df[col] = df[col].fillna(df[col].median())
+df[numerical_columns] = df[numerical_columns].replace(
+    [np.inf, -np.inf], np.nan
+)
 
 df = df.dropna(subset=["posted_rate"])
 
@@ -108,7 +103,10 @@ preprocessor = ColumnTransformer(
 
             "cat",
 
-            OneHotEncoder(handle_unknown="ignore"),
+            Pipeline([
+                ("imputer", SimpleImputer(strategy="constant", fill_value="__missing__")),
+                ("encoder", OneHotEncoder(handle_unknown="ignore"))
+            ]),
 
             categorical_columns
 
@@ -118,7 +116,9 @@ preprocessor = ColumnTransformer(
 
             "num",
 
-            "passthrough",
+            Pipeline([
+                ("imputer", SimpleImputer(strategy="median"))
+            ]),
 
             numerical_columns
 
@@ -173,10 +173,6 @@ pipeline.fit(X, y)
 print("\nFinal Linear Regression model trained on all labeled data.")
 
 
-
-
-pipeline.fit(X, y)
-
 validation = pd.read_csv("validation.csv")
 
 validation_original = validation.copy()
@@ -227,21 +223,9 @@ validation["weight_per_mile"] = (
 
 validation = validation.drop(columns=["date"])
 
-for col in categorical_columns:
-
-    validation[col] = validation[col].fillna(df[col].mode()[0])
-
-for col in numerical_columns:
-
-    validation[col] = validation[col].replace(
-
-        [np.inf, -np.inf],
-
-        np.nan
-
-    )
-
-    validation[col] = validation[col].fillna(df[col].median())
+validation[numerical_columns] = validation[numerical_columns].replace(
+    [np.inf, -np.inf], np.nan
+)
 
 validation_predictions = pipeline.predict(validation)
 
