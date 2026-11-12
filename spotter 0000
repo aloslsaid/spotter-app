@@ -205,7 +205,7 @@ validation["is_weekend"] = (validation["day_of_week"] >= 5).astype(int)
 
 validation["route"] = (
 
-    validation["pickup"].astype(str)
+    validation["pickup"].astype("string")
 
     + "_"
 
