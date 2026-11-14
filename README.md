@@ -1,16 +1,55 @@
 # Spotter — Freight Rate Prediction
 
-An experimental regression project for estimating freight rates from transportation-load data. The README describes model comparison and a December prediction output, but the repository currently lists a folder named `spotter 0000` and this README. Inspect that folder to confirm the implementation, data files, and exact workflow.
+> A supervised machine-learning workflow for estimating freight load rates from route, equipment, shipment, and market signals.
 
-## Getting started
+## Overview
+Spotter is a tabular regression experiment built around freight-market data. It transforms shipment and route attributes into model-ready features, learns the relationship between those attributes and the posted freight rate, and evaluates predictions on held-out records.
 
-1. Clone or download the repository and inspect `spotter 0000`.
-2. Confirm the training and prediction data, target column, load identifier, and any data license.
-3. Create a Python virtual environment. There is no root `requirements.txt` in the current file list, so derive dependencies from the project source rather than guessing.
-4. Use the script or notebook's documented command once the entry point is confirmed.
+## Feature engineering
+The training script:
+- Loads a labeled training file named `train-test.csv`.
+- Removes identifier and raw latitude/longitude fields that are not used by the current model.
+- Parses the shipment date and derives year, month, day, day-of-week, and weekend indicators.
+- Builds a route feature by combining pickup and delivery locations.
+- Calculates weight per mile while guarding against zero-distance division.
+- Handles missing categorical values with the mode and missing numeric values with the median.
+- Uses one-hot encoding for categorical route/equipment fields.
+- Fits a Linear Regression model inside a Scikit-learn Pipeline.
+- Reports MAE, RMSE, and R² on a held-out split.
+- Refits the pipeline on all labeled training rows and prepares predictions for a separate validation dataset.
 
-The existing project notes report a validation R² of 0.8618, MAE of 126.39, and RMSE of 543.59. These figures are included as historical project claims, not independently verified results; the metric units, validation split, data version, and procedure should be documented before treating them as comparable. No root test suite or reproducible command is currently listed.
+## Expected input files
+The current script expects these files in the working directory:
+- `train-test.csv` — labeled training data, including the target column `posted_rate`.
+- `validation.csv` — records to score after training.
 
-## Reproducibility
+The repository currently contains the script but does not show those two CSV inputs in its root tree. Obtain the authorized data files before running; do not substitute unrelated data without checking the required column schema.
 
-Keep train/validation separation clear, prevent target leakage, preserve load IDs when exporting predictions, and record the exact input/output schema. Do not publish private customer or shipment data.
+## Installation
+Python 3.10+ is recommended.
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install pandas numpy scikit-learn
+```
+
+## Run
+The script filename is `spotter 0000` (no extension):
+```bash
+python "spotter 0000"
+```
+Run it from the directory containing both expected CSV files. The script prints regression metrics and generates predictions for the validation rows according to the code's output section.
+
+## Evaluation
+- **MAE:** average absolute difference between predicted and actual posted rates.
+- **RMSE:** emphasizes larger prediction errors.
+- **R²:** measures explained variance relative to a constant baseline.
+
+A score depends on the dataset period, split, route distribution, and market conditions. Freight rates change over time; a random split may not represent future-market performance. For deployment, evaluate on a later time period and monitor drift.
+
+## Skills demonstrated
+Freight analytics · Regression · Date-based features · Route feature engineering · Missing-value handling · Categorical encoding · Scikit-learn Pipelines
